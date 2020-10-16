@@ -1,6 +1,6 @@
 
 /*
-更新时间: 2020-09-27 10:10
+更新时间: 2020-10-16 20:10
 
 腾讯新闻签到修改版，可以自动阅读文章获取红包，该活动为瓜分百万现金挑战赛，针对幸运用户参与
 
@@ -56,14 +56,20 @@ let SignArr = [],SignUrl = "";
     
 
 if ($.isNode()) {
-  if (process.env.TXNEWS_COOKIE && process.env.TXNEWS_COOKIE.split('&') && process.env.TXNEWS_COOKIE.split('&').length > 0) {
-  CookieTxnews = process.env.TXNEWS_COOKIE.split('&');
-  }
- if (process.env.TXNEWS_SIGN && process.env.TXNEWS_SIGN.split('#') && process.env.TXNEWS_SIGN.split('#').length > 0) {
+  if (process.env.TXNEWS_COOKIE && process.env.TXNEWS_COOKIE.indexOf('&') > -1) {
+      CookieTxnews = process.env.TXNEWS_COOKIE.split('&');
+  } else {
+      CookieTxnews = process.env.TXNEWS_COOKIE.split()
+  };
+  if (process.env.TXNEWS_SIGN && process.env.TXNEWS_SIGN.indexOf('#') > -1) {
   SignUrl = process.env.TXNEWS_SIGN.split('#');
-  }
-  if (process.env.TXNEWS_VIDEO && process.env.TXNEWS_VIDEO.split('#') && process.env.TXNEWS_VIDEO.split('#').length > 0) {
+  } else {
+      SignUrl = process.env.TXNEWS_SIGN.split()
+  };
+  if (process.env.TXNEWS_VIDEO && process.env.TXNEWS_VIDEO.indexOf('#') > -1) {
   VideoUrl = process.env.TXNEWS_VIDEO.split('#');
+  } else {
+      VideoUrl = process.env.TXNEWS_VIDEO.split()
   };
     Object.keys(CookieTxnews).forEach((item) => {
         if (CookieTxnews[item]) {
@@ -124,7 +130,12 @@ if (isGetCookie) {
       };
       await getTotal();
       await showmsg();
-   }
+    if ($.isNode()){
+       if (readnum%notifyInterval==0&&Total_Earn.data.wealth[1].title > 2){
+     await notify.sendNotify($.name,subTile+'\n'+detail)
+       }
+     }
+    }
   })()
       .catch((e) => $.logErr(e))
       .finally(() => $.done())
@@ -177,13 +188,14 @@ function activity() {
   return new Promise((resolve, reject) => {
     setTimeout(()=>{
       $.get({url:`${TX_HOST}user/activity/get?isJailbreak=0&${token}`, headers: {Cookie:cookieVal}}, (error,response, data) =>{
-        if (error) {
-          $.msg("获取活动Id失败‼️", "", error)
-        } else {
-          let obj = JSON.parse(data)
-          actid = obj.data.activity.id
-          console.log(` 您的活动ID为: `+actid+"\n")
-        }
+        try{
+             let obj = JSON.parse(data)
+             actid = obj.data.activity.id
+            console.log(` 您的活动ID为: `+actid+"\n")
+          } catch(error){
+           $.msg("获取活动ID失败，详情请看日志","","")
+           console.log("活动ID日志:"+ data)
+          }
         resolve()
       })
     },s)
@@ -272,7 +284,7 @@ function Redpack() {
             redpackres = `【阅读红包】到账`+redpacks+`元 🌷\n`
             $.log("阅读红包到账"+redpacks+"元\n")
           }
-          else if (rcash.ret == 0&&redpacks>0){
+          else if (rcash.ret == 0&& redpacks >0){
             redpackres = `【视频红包】到账`+redpacks+`元 🌷\n`
             $.log("视频红包到账"+redpacks+"元\n")
           }
@@ -296,8 +308,8 @@ function getTotal() {
       if (error) {
         $.msg("获取收益信息失败‼️", "", error)
       } else {
-        const obj = JSON.parse(data)
-        subTile = '【收益总计】'+obj.data.wealth[0].title +'金币  '+"钱包: " +obj.data.wealth[1].title+'元'
+        const Total_Earn = JSON.parse(data)
+        subTile = '【收益总计】'+Total_Earn.data.wealth[0].title +'金币  '+"钱包: " +Total_Earn.data.wealth[1].title+'元'
      // $.log("钱包收益共计"+obj.data.wealth[1].title+"元")
       }
       resolve()

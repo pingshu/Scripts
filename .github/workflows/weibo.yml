@@ -1,23 +1,19 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: 中青看点
+name: 微博每日签到打卡
 
 on:
   workflow_dispatch:
   schedule:
-     - cron: '*/7 */5 * * *'
+     - cron: '5 18 * * *'
   watch:
     types: started
-
 jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
     env:
-        YOUTH_HEADER: ${{ secrets.YOUTH_HEADER }}
-        YOUTH_ARTBODY: ${{ secrets.YOUTH_ARTBODY }}
-        YOUTH_TIME: ${{ secrets.YOUTH_TIME }}
+        WB_TOKEN: ${{ secrets.WB_TOKEN }}
+        WB_COOKIE: ${{ secrets.WB_COOKIE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,16 +22,14 @@ jobs:
         with:
           node-version: 12.x
       - name: npm install
-        if: env.YOUTH_HEADER
+        if: env.WB_TOKEN
         run: |
           npm install
-      - name: '运行 【中青看点】'
-        if: env.YOUTH_HEADER
+      - name: '运行 【新浪微博】'
+        if: env.WB_TOKEN
         run: |
-          node Task/youth.js
+          node Task/weibo.js
         env:
-          YOUTH_NOTIFY_CONTROL: ${{ secrets.YOUTH_NOTIFY_CONTROL }}
-          TZ: Asia/shanghai
           PUSH_KEY: ${{ secrets.PUSH_KEY}}
           BARK_PUSH: ${{ secrets.BARK_PUSH}}
           BARK_SOUND: ${{ secrets.BARK_SOUND}}
@@ -51,5 +45,3 @@ jobs:
           PUSH_PLUS_USER: ${{ secrets.PUSH_PLUS_USER}}
           TG_PROXY_HOST: ${{ secrets.TG_PROXY_HOST}}
           TG_PROXY_PORT: ${{ secrets.TG_PROXY_PORT}}
-
-    

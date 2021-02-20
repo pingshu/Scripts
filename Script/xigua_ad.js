@@ -1,7 +1,7 @@
 /*
  西瓜视频去除内容页广告 
 [rewrite_local]
-https:\/\/api3-normal-c-hl\.ixigua\.com\/video\/app\/stream\/ url script-response-body https://raw.githubusercontent.com/pingshu/Scripts/master/Script/xigua_ad.js
+https:\/\/api3-normal-c-hl\.ixigua\.com\/video\/app\/stream\/ url script-response-body xigua_ad.js
 [mitm]
 hostname = api*-normal-c-hl.ixigua.com
 */
